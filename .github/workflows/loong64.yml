@@ -95,9 +95,17 @@ jobs:
       #- name: Apply patches
       #  working-directory: buildx
       #  run: git apply ../*.patch
-      - name: Build buildx
+      - name: Build buildx for loong64
         working-directory: buildx
-        run: make
+        run: |
+          PKG=github.com/docker/buildx
+          VERSION=$(git describe --match 'v[0-9]*' --dirty='.m' --always --tags)
+          REVISION=$(git rev-parse HEAD)$(if ! git diff --no-ext-diff --quiet --exit-code; then echo .m; fi)
+          LDFLAGS="-s -w -X ${PKG}/version.Version=${VERSION} -X ${PKG}/version.Revision=${REVISION} -X ${PKG}/version.Package=${PKG}"
+          echo "VERSION=${VERSION}"
+          echo "REVISION=${REVISION}"
+          mkdir -p bin/build
+          GOOS=linux GOARCH=loong64 CGO_ENABLED=0 go build -trimpath -ldflags "${LDFLAGS}" -o bin/build/buildx ./cmd/buildx
       - name: Print binary SHA-256 checksums
         working-directory: buildx
         run: |
@@ -105,7 +113,7 @@ jobs:
       - name: Inspect binary file types
         working-directory: buildx
         run: |
-          echo "=== bin ==="
+          echo "=== bin/build ==="
           file bin/build/*
       - name: Upload binaries
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -176,16 +184,16 @@ jobs:
           cat > release-body.md <<'BODYEOF'
           ## Artifacts
 
-          | File     | Download                                                     |
-          |----------|--------------------------------------------------------------|
-          | `docker` | [docker](${{ env.BASE_URL }}/docker)                         |
+          | File     | Download                             |
+          |----------|--------------------------------------|
+          | `buildx` | [buildx](${{ env.BASE_URL }}/buildx) |
 
           Each file has a corresponding `.asc` detached GPG signature.
 
           ```shell
           # Binary
-          curl -LO ${{ env.BASE_URL }}/docker
-          curl -LO ${{ env.BASE_URL }}/docker.asc
+          curl -LO ${{ env.BASE_URL }}/buildx
+          curl -LO ${{ env.BASE_URL }}/buildx.asc
           ```
           
           ## Verifying releases
