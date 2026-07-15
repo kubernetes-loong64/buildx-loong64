@@ -1,4 +1,46 @@
+# Docker Buildx for LoongArch64
+
 <p align="center"><a href="README.md">English</a> | <a href="README-zh.md">中文</a></p>
+
+<p align="center"><img src="https://img.shields.io/badge/Docker%20Buildx%20LoongArch64%20%E9%BE%99%E8%8A%AF%E6%9E%B6%E6%9E%84%E5%8F%91%E8%A1%8C%E7%89%88-blue?logo=docker&logoColor=white" alt="Docker Buildx LoongArch64 龙芯架构发行版"></p>
+
+Build [Docker Buildx](https://github.com/docker/buildx) binaries for the **LoongArch64 (loong64)** architecture via CI/CD.
+
+## How it works
+
+A GitHub Actions workflow clones the specified docker/buildx version, cross-compiles with
+`GOOS=linux GOARCH=loong64`, and uploads the built binaries as workflow artifacts. Target platform: `linux/loong64`.
+
+## Branch naming
+
+Push a branch named `loong64-buildx-v<version>` (e.g. `loong64-buildx-v0.30.1`) to trigger a build. Append
+`+<build>` (e.g. `loong64-buildx-v0.30.1+0`) to include build metadata.
+
+## [Release](https://github.com/kubernetes-loong64/buildx-loong64/releases)
+
+Push a tag matching `release-loong64-buildx-v<version>` (e.g. `release-loong64-buildx-v0.30.1+0`) to publish
+a GitHub Release with the built binaries.
+
+The `+<build>` suffix provides build metadata (e.g. `+0`, `+1-alpha.1`).
+
+The suffix in the build metadata indicates the release stage:
+
+| Suffix  | Stage         |
+|---------|---------------|
+| `alpha` | Internal beta |
+| `beta`  | Public beta   |
+| `rc`    | Pre-release   |
+| (none)  | Stable        |
+
+## Release artifacts
+
+Each release includes the following files:
+
+| File     | Description          |
+|----------|----------------------|
+| `buildx` | Docker Buildx binary |
+
+Each file has a corresponding `.asc` detached GPG signature.
 
 ## Verifying releases
 
@@ -17,6 +59,24 @@ Or download the key file manually and import it:
 ```shell
 gpg --import /tmp/xxx
 ```
+
+Each release artifact has a corresponding `.asc` detached signature. To verify, download both the file and its `.asc`
+signature from the release, then:
+
+```shell
+gpg --verify <file>.asc <file>
+```
+
+## Reference repositories
+
+- [src-anolis-os/docker](https://gitee.com/src-anolis-os/docker)
+
+## Documentation
+
+> Applies to: moby-loong64, tini-loong64, cli-loong64, runc-loong64, containerd-loong64
+
+- [Install containerd and docker binaries on LoongArch](https://xuxiaowei.io/t/754)
+- [Install containerd and docker RPM packages on LoongArch](https://xuxiaowei.io/t/811)
 
 ## License
 
